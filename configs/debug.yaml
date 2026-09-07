@@ -1,0 +1,78 @@
+env:
+  rom_path: "./roms/Contra.nes"
+  scenario: "movement_shooting"
+  observation_mode: "pixels"
+  frame_stack: 4
+  frame_size: 84
+  max_episode_steps: 200
+  action_repeat: 2
+
+actions:
+  space: "playable"
+
+reward:
+  progress_coef: 6.0
+  kill_coef: 20.0
+  death_penalty: -50.0
+  idle_penalty: -4.0
+  survival_coef: 0.001
+  level_complete_bonus: 1000.0
+  idle_threshold_steps: 24
+  idle_timeout_steps: 320
+  idle_min_progress: 2.0
+  idle_combat_scale: 0.05
+  idle_forfeit_scale: 1.0
+  idle_progress_ref: 64.0
+  terminate_on_death: true
+  death_forfeit_progress: false
+  death_progress_scale: 1.0
+  score_coef: 0.0
+  no_combat_progress_scale: 0.2
+  combat_grace_progress: 64.0
+  score_points_per_kill: 100.0
+  max_score_delta_per_step: 800.0
+  max_kills_from_score_per_step: 4
+  fall_y_threshold: 6.0
+  fall_no_water_penalty: -2.0
+  down_no_water_penalty: -0.5
+  climb_bonus: 0.5
+
+agent:
+  cnn_channels: [8, 16]
+  kernel_sizes: [8, 4]
+  strides: [4, 2]
+  dense_hidden: [64, 32]
+
+evolution:
+  population_size: 4
+  elite_count: 1
+  tournament_size: 2
+  mutation_rate: 0.04
+  mutation_std: 0.08
+  crossover_rate: 0.5
+  immigrant_frac: 0.25
+  stall_generations: 3
+  seed: 42
+
+evaluation:
+  workers: 2
+  seed_policy: "fixed"
+  seeds_per_individual: 1
+
+training:
+  generations: 10
+  mode: "debug"
+  checkpoint_interval: 2
+  headless: true
+
+curriculum:
+  enabled: true
+  advance_metric: progress
+  stages: [movement_shooting]
+  advance_threshold: 80.0
+  advance_patience: 1
+
+visualization:
+  enabled: false
+  fps: 15
+  layout: "auto"

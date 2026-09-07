@@ -1,0 +1,113 @@
+# Default training config - CPU-first, M4 16GB optimized
+env:
+  rom_path: "./roms/Contra.nes"
+  scenario: "movement"  # level1_start.state = true spawn: full game every episode
+  observation_mode: "pixels"  # features | pixels
+  frame_stack: 4
+  frame_size: 84  # 84x84
+  grayscale: true
+  max_episode_steps: 5000
+  action_repeat: 4
+  sticky_action: false
+  flicker_pool: 2  # max-pool last N frames (NES sprite flicker)
+
+actions:
+  space: "playable"  # reduced (8) | playable (16, includes UP+JUMP ramps)
+
+reward:
+  progress_coef: 6.0
+  kill_coef: 20.0          # per kill (RAM counter or score-inferred)
+  boss_damage_coef: 5.0
+  survival_coef: 0.001
+  death_penalty: -50.0
+  idle_penalty: -4.0
+  level_complete_bonus: 1000.0
+  idle_threshold_steps: 24
+  idle_timeout_steps: 320
+  idle_min_progress: 2.0
+  idle_combat_scale: 0.05
+  idle_forfeit_scale: 1.0
+  idle_progress_ref: 64.0
+  terminate_on_death: true
+  death_forfeit_progress: false
+  death_progress_scale: 1.0
+  score_coef: 0.0          # raw score points no longer rewarded (kills are)
+  no_combat_progress_scale: 0.2
+  combat_grace_progress: 64.0
+  score_points_per_kill: 100.0
+  max_score_delta_per_step: 800.0
+  max_kills_from_score_per_step: 4
+  fall_y_threshold: 6.0
+  fall_no_water_penalty: -2.0
+  down_no_water_penalty: -0.5
+  climb_bonus: 0.5
+
+agent:
+  cnn_channels: [8, 16]
+  kernel_sizes: [8, 4]
+  strides: [4, 2]
+  dense_hidden: [64, 32]
+  activation: "relu"
+  param_limit: 100000
+
+evolution:
+  population_size: 16
+  elite_count: 2
+  tournament_size: 3
+  mutation_rate: 0.04
+  mutation_std: 0.08        # RELATIVE multiplier of per-layer init scale
+  mutation_std_min: 0.02
+  mutation_std_max: 0.16
+  crossover_rate: 0.5
+  crossover_type: "blend"
+  adaptive_mutation: true
+  diversity_threshold: 0.05
+  adaptive_boost: 1.5
+  immigrant_frac: 0.1
+  stall_generations: 5
+  stall_immigrant_frac: 0.25
+  reevaluate_elites: false  # elites carry fitness under the fixed seed policy
+  init_genome: "checkpoints/seed_genome.npy"  # seed from the best surviving genome (null = random)
+  stall_rel_epsilon: 0.001
+  seed: 42
+
+evaluation:
+  workers: 8
+  vectorized: false
+  seed_policy: "fixed"       # fixed | per_generation - same seeds for all individuals
+  seeds_per_individual: 1
+
+training:
+  generations: 1000
+  mode: "training"
+  checkpoint_interval: 5
+  save_best: true
+  headless: true
+
+curriculum:
+  enabled: false  # end-to-end training: every episode from the spawn (no stage states)
+  advance_metric: progress
+  stages:
+    - movement_shooting
+    - enemies
+    - projectiles
+    - extended_level1
+    - full_level_1
+    - boss
+    - full_game
+  advance_threshold: 80.0
+  advance_patience: 2
+
+visualization:
+  enabled: false
+  fps: 15
+  layout: "auto"
+  show_charts: true
+
+logging:
+  log_interval: 1
+  save_frames: false
+
+resources:
+  monitor_interval: 1.0
+  max_ram_percent: 85.0

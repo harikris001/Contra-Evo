@@ -1,0 +1,55 @@
+# Headless smoke test with MockContraEnv (no ROM) - for CI / quick sanity checks
+env:
+  rom_path: null
+  scenario: "movement_shooting"
+  observation_mode: "pixels"
+  frame_stack: 4
+  frame_size: 84
+  max_episode_steps: 300
+  action_repeat: 4
+  flicker_pool: 2
+
+actions:
+  space: "playable"
+
+agent:
+  cnn_channels: [8, 16]
+  kernel_sizes: [8, 4]
+  strides: [4, 2]
+  dense_hidden: [64, 32]
+  param_limit: 100000
+
+evolution:
+  population_size: 6
+  elite_count: 2
+  tournament_size: 3
+  mutation_rate: 0.04
+  mutation_std: 0.08
+  crossover_rate: 0.5
+  adaptive_mutation: true
+  immigrant_frac: 0.15
+  stall_generations: 4
+  stall_immigrant_frac: 0.3
+  reevaluate_elites: false
+  seed: 42
+
+evaluation:
+  workers: 2
+  seed_policy: "fixed"
+  seeds_per_individual: 1
+
+training:
+  generations: 5
+  mode: "training"
+  checkpoint_interval: 5
+  headless: true
+
+curriculum:
+  enabled: false
+
+visualization:
+  enabled: false
+
+resources:
+  monitor_interval: 1.0
+  max_ram_percent: 85.0
